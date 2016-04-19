@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<scpd xmlns="urn:schemas-upnp-org:service-1-0" >
+	<specVersion>														<!-- 指定版本号 -->
+		<major>1</major>												<!-- 指定主版本号 -->
+		<minor>0</minor>												<!-- 指定次版本号 -->
+	</specVersion>
+	<actionList>														<!-- 配置Service下的Action列表 -->
+		<action>
+			<name>SetPower</name>										<!-- 指定Action名 -->
+			<argumentList>
+				<argument>
+					<name>Power</name>									<!-- 指定参数名 -->
+					<relatedStateVariable>Power</relatedStateVariable>	<!-- 指定参数采用的变量类型 -->
+					<direction>in</direction>
+				</argument>
+				<argument>
+					<name>Result</name>
+					<relatedStateVariable>Result</relatedStateVariable>
+					<direction>out</direction>
+				</argument>
+			</argumentList>
+		</action>
+		<action>
+			<name>GetPower</name>
+			<argumentList>
+				<argument>
+					<name>Power</name>
+					<relatedStateVariable>Power</relatedStateVariable>
+					<direction>out</direction>
+				</argument>
+			</argumentList>
+		</action>
+	</actionList>
+	<serviceStateTable>													<!-- 配置Service下的状态变量列表 -->
+		<stateVariable sendEvents="yes">								<!-- 做限制,用于判断是否可以发送事件;使用场景:修改完状态后,发送响应 -->
+			<name>Power</name>											<!-- 变量名称 -->
+			<dataType>boolean</dataType>								<!-- 数据类型 -->
+			<allowedValueList>											<!-- 允许采用数值,程序中在哪里做了限制? -->
+				<allowedValue>0</allowedValue>
+				<allowedValue>1</allowedValue>
+			</allowedValueList>
+			<allowedValueRange>											<!-- 允许取值范围,程序中在哪里做了限制? -->
+				<maximum>123</maximum>
+				<minimum>19</minimum>
+				<step>1</step>
+			</allowedValueRange>
+		</stateVariable>
+		<stateVariable sendEvents="no">
+			<name>Result</name>
+			<dataType>boolean</dataType>
+		</stateVariable>
+	</serviceStateTable>
+</scpd>
