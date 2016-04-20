@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
 
 import org.cybergarage.upnp.ControlPoint;
 import org.cybergarage.upnp.Device;
@@ -24,6 +23,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
+ * main activity
  * Created by yinghuihong on 16/4/13.
  */
 public class MainActivity extends AppCompatActivity implements NotifyListener, SearchResponseListener, EventListener {
@@ -61,14 +61,14 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
         super.onDestroy();
     }
 
-    private void notifyDevices() {
+    private void notifyDevices(final String host) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ArrayList<Device> devices = new ArrayList<>();
                 devices.addAll(mControlPoint.getDeviceList());
 
-                DeviceAdapter adapter = new DeviceAdapter(MainActivity.this, devices);
+                DeviceAdapter adapter = new DeviceAdapter(MainActivity.this, host, devices);
                 rvDevices.setLayoutManager(new LinearLayoutManager(MainActivity.this));
                 rvDevices.setAdapter(adapter);
             }
@@ -97,16 +97,17 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
             String nt = ssdpPacket.getNT();
             show("ssdp:byebye : uuid = " + usn + ", NT = " + nt);
         }
-        notifyDevices();
+        String location = ssdpPacket.getLocation();
+        notifyDevices(location.substring(0, location.lastIndexOf("/")));
     }
 
     @Override
     public void deviceSearchResponseReceived(SSDPPacket ssdpPacket) {
         String uuid = ssdpPacket.getUSN();
         String st = ssdpPacket.getST();
-        String url = ssdpPacket.getLocation();
-        show("device search res : uuid = " + uuid + ", ST = " + st + ", location = " + url);
-        notifyDevices();
+        String location = ssdpPacket.getLocation();
+        show("device search res : uuid = " + uuid + ", ST = " + st + ", location = " + location);
+        notifyDevices(location.substring(0, location.lastIndexOf("/")));
     }
 
     private void show(final String info) {

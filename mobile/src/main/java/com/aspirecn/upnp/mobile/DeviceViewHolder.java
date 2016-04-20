@@ -9,11 +9,13 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import org.cybergarage.upnp.Device;
+import org.cybergarage.upnp.Icon;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * view holder
  * Created by yinghuihong on 16/4/14.
  */
 public class DeviceViewHolder extends RecyclerView.ViewHolder {
@@ -29,9 +31,11 @@ public class DeviceViewHolder extends RecyclerView.ViewHolder {
         ButterKnife.bind(this, itemView);
     }
 
-    public void bind(Context context, Device device) {
-        System.out.println("!!device " + device.toString());
-//        Picasso.with(context).load(device.getSmallestIcon().getURL()).into(imgIcon);
+    public void bind(Context context, String host, Device device) {
+        if (device.getIconList() != null && device.getIconList().size() != 0) {
+            Icon icon = (Icon) device.getIconList().get(0);
+            Picasso.with(context).load(host + icon.getURL()).into(imgIcon);
+        }
         tvName.setText(device.getFriendlyName());
     }
 

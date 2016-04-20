@@ -22,7 +22,7 @@
 				<width>48</width> 
 				<height>32</height> 
 				<depth>8</depth> 
-				<url>icon.gif</url> 
+				<url>/icon.gif</url>
 			</icon>
 		</iconList>
 		<serviceList>

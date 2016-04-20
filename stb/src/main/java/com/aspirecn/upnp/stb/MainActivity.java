@@ -22,6 +22,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
+ * main activity
  * Created by yinghuihong on 16/4/18.
  */
 public class MainActivity extends AppCompatActivity implements LightDevice.RepaintListener {
@@ -90,28 +91,27 @@ public class MainActivity extends AppCompatActivity implements LightDevice.Repai
             }
         }
 
-        for (int i = 0; i < files.length; i++) {
+        for (String file : files) {
             try {
                 // 获得每个文件的名字
-                String fileName = files[i];
                 // 根据路径判断是文件夹还是文件
-                if (!fileName.contains(".")) {
+                if (!file.contains(".")) {
                     if (0 == assetDir.length()) {
-                        CopyAssets(fileName, dir + fileName + "/");
+                        CopyAssets(file, dir + file + "/");
                     } else {
-                        CopyAssets(assetDir + "/" + fileName, dir + "/"
-                                + fileName + "/");
+                        CopyAssets(assetDir + "/" + file, dir + "/"
+                                + file + "/");
                     }
                     continue;
                 }
-                File outFile = new File(mWorkingPath, fileName);
+                File outFile = new File(mWorkingPath, file);
                 if (outFile.exists())
                     outFile.delete();
-                InputStream in = null;
+                InputStream in;
                 if (0 != assetDir.length())
-                    in = getAssets().open(assetDir + "/" + fileName);
+                    in = getAssets().open(assetDir + "/" + file);
                 else
-                    in = getAssets().open(fileName);
+                    in = getAssets().open(file);
                 OutputStream out = new FileOutputStream(outFile);
 
                 // Transfer bytes from in to out
@@ -123,8 +123,6 @@ public class MainActivity extends AppCompatActivity implements LightDevice.Repai
 
                 in.close();
                 out.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
