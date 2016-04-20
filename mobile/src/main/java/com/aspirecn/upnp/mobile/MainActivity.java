@@ -98,7 +98,11 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
             show("ssdp:byebye : uuid = " + usn + ", NT = " + nt);
         }
         String location = ssdpPacket.getLocation();
-        notifyDevices(location.substring(0, location.lastIndexOf("/")));
+        String host = null;
+        if (location != null && location.length() != 0) {
+            host = location.substring(0, location.lastIndexOf("/"));
+        }
+        notifyDevices(host);
     }
 
     @Override
@@ -107,7 +111,11 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
         String st = ssdpPacket.getST();
         String location = ssdpPacket.getLocation();
         show("device search res : uuid = " + uuid + ", ST = " + st + ", location = " + location);
-        notifyDevices(location.substring(0, location.lastIndexOf("/")));
+        String host = null;
+        if (location != null && location.length() != 0) {
+            host = location.substring(0, location.lastIndexOf("/"));
+        }
+        notifyDevices(host);
     }
 
     private void show(final String info) {
