@@ -1,6 +1,5 @@
 package com.aspirecn.upnp.stb.device;
 
-import org.cybergarage.net.HostInterface;
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.Argument;
 import org.cybergarage.upnp.Device;
@@ -11,9 +10,8 @@ import org.cybergarage.upnp.control.ActionListener;
 import org.cybergarage.upnp.control.QueryListener;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
 
-import java.io.InputStream;
-
 /**
+ * 灯泡设备,供控制开关
  * Created by yinghuihong on 16/4/18.
  */
 public class LightDevice extends Device implements ActionListener, QueryListener {
@@ -22,8 +20,7 @@ public class LightDevice extends Device implements ActionListener, QueryListener
 
     public LightDevice(String path) throws InvalidDescriptionException {
         super(path);
-        setSSDPBindAddress(HostInterface.getInetAddress(HostInterface.IPV4_BITMASK, null));
-        setHTTPBindAddress(HostInterface.getInetAddress(HostInterface.IPV4_BITMASK, null));
+
         Action getPowerAction = getAction("GetPower");
         getPowerAction.setActionListener(this);
 
@@ -111,7 +108,7 @@ public class LightDevice extends Device implements ActionListener, QueryListener
         }
 
 //        comp.repaint();
-        repaintListener.repaint();
+        onRepaintListener.onRepaint(this);
         return ret;
     }
 
@@ -135,14 +132,14 @@ public class LightDevice extends Device implements ActionListener, QueryListener
     // repaint
     ////////////////////////////////////////////////
 
-    public interface RepaintListener {
-        void repaint();
+    public interface OnRepaintListener {
+        void onRepaint(LightDevice lightDevice);
     }
 
-    private RepaintListener repaintListener;
+    private OnRepaintListener onRepaintListener;
 
-    public void setRepaintListener(RepaintListener listener) {
-        this.repaintListener = listener;
+    public void setOnRepaintListener(OnRepaintListener listener) {
+        this.onRepaintListener = listener;
     }
 
 }

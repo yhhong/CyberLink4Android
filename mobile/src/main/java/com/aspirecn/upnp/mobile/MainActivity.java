@@ -1,10 +1,17 @@
 package com.aspirecn.upnp.mobile;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import org.cybergarage.upnp.ControlPoint;
 import org.cybergarage.upnp.Device;
@@ -19,7 +26,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
@@ -27,6 +33,8 @@ import rx.schedulers.Schedulers;
  * Created by yinghuihong on 16/4/13.
  */
 public class MainActivity extends AppCompatActivity implements NotifyListener, SearchResponseListener, EventListener {
+
+    private final static String TAG = MainActivity.class.getSimpleName();
 
     @Bind(R.id.rv_devices)
     RecyclerView rvDevices;
@@ -40,24 +48,30 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
 
         ButterKnife.bind(this);
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(mReceiver, filter);
 
         mControlPoint = new ControlPoint();
         mControlPoint.addNotifyListener(this);
         mControlPoint.addSearchResponseListener(this);
         mControlPoint.addEventListener(this);
+        startControlPoint();
+    }
+
+    private void startControlPoint() {
         Observable.create(new Observable.OnSubscribe<Object>() {
             @Override
             public void call(Subscriber<? super Object> subscriber) {
                 mControlPoint.start();
             }
-        }).subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+        }).subscribeOn(Schedulers.newThread()).subscribe();
     }
 
     @Override
     protected void onDestroy() {
         mControlPoint.stop();
+        unregisterReceiver(mReceiver);
         super.onDestroy();
     }
 
@@ -127,4 +141,27 @@ public class MainActivity extends AppCompatActivity implements NotifyListener, S
             }
         });
     }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        private ConnectivityManager connectivityManager;
+        private NetworkInfo info;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                Log.d(TAG, "网络状态已经改变");
+                connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                info = connectivityManager.getActiveNetworkInfo();
+                if (info != null && info.isAvailable()) {
+                    String name = info.getTypeName();
+                    Log.d(TAG, "当前网络名称：" + name);
+                    startControlPoint();
+                } else {
+                    Log.d(TAG, "没有可用网络");
+                }
+            }
+        }
+    };
 }
