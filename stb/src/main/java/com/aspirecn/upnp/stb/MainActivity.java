@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements LightDevice.OnRep
         public void onServiceConnected(ComponentName name, IBinder service) {
             stbService = ((STBService.ServiceBinder) service).getService();
             stbService.setRepaintListener(MainActivity.this);
+//            String s = null;
+//            System.out.println(s.length());
         }
 
         /** 无法获取到服务对象时的操作 */

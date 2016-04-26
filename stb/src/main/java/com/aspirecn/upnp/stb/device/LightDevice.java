@@ -107,8 +107,10 @@ public class LightDevice extends Device implements ActionListener, QueryListener
             ret = true;
         }
 
-//        comp.repaint();
-        onRepaintListener.onRepaint(this);
+        // call back to repaint ui
+        if (onRepaintListener != null) {
+            onRepaintListener.onRepaint(this);
+        }
         return ret;
     }
 
