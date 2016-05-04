@@ -1,4 +1,4 @@
-package com.aspirecn.upnp.stb.device;
+package com.aspirecn.upnp.stb.upnp;
 
 import org.cybergarage.upnp.Action;
 import org.cybergarage.upnp.Argument;
@@ -8,31 +8,32 @@ import org.cybergarage.upnp.ServiceList;
 import org.cybergarage.upnp.StateVariable;
 import org.cybergarage.upnp.control.ActionListener;
 import org.cybergarage.upnp.control.QueryListener;
-import org.cybergarage.upnp.device.InvalidDescriptionException;
 
 /**
- * 灯泡设备,供控制开关
- * Created by yinghuihong on 16/4/18.
+ * 灯泡
+ * Created by yinghuihong on 16/5/3.
  */
-public class LightDevice extends Device implements ActionListener, QueryListener {
+public class LightService implements ActionListener, QueryListener {
 
-    private StateVariable powerVar;
+    /**
+     * 可将变更通知到subscribers
+     */
+    private StateVariable mPowerVar;
 
-    public LightDevice(String path) throws InvalidDescriptionException {
-        super(path);
-
-        Action getPowerAction = getAction("GetPower");
+    public LightService(Device device) {
+        Action getPowerAction = device.getAction("GetPower");
         getPowerAction.setActionListener(this);
 
-        Action setPowerAction = getAction("SetPower");
+        Action setPowerAction = device.getAction("SetPower");
         setPowerAction.setActionListener(this);
 
-        ServiceList serviceList = getServiceList();
+        ServiceList serviceList = device.getServiceList();
         Service service = serviceList.getService(0);
         service.setQueryListener(this);
 
-        powerVar = getStateVariable("Power");
+        mPowerVar = device.getStateVariable("Power");
     }
+
 
     ////////////////////////////////////////////////
     //	on/off
@@ -55,17 +56,17 @@ public class LightDevice extends Device implements ActionListener, QueryListener
     public boolean setPowerState(String state) {
         if (state == null) {
             onFlag = false;
-            powerVar.setValue("off");
+            mPowerVar.setValue("off");
             return false;
         }
         if (state.compareTo("on") == 0) {
             onFlag = true;
-            powerVar.setValue("on");
+            mPowerVar.setValue("on");
             return true;
         }
         if (state.compareTo("off") == 0) {
             onFlag = false;
-            powerVar.setValue("off");
+            mPowerVar.setValue("off");
             return true;
         }
         return false;
@@ -108,8 +109,8 @@ public class LightDevice extends Device implements ActionListener, QueryListener
         }
 
         // call back to repaint ui
-        if (onRepaintListener != null) {
-            onRepaintListener.onRepaint(this);
+        if (onStatusChangedListener != null) {
+            onStatusChangedListener.onStatusChanged(isOn());
         }
         return ret;
     }
@@ -124,24 +125,18 @@ public class LightDevice extends Device implements ActionListener, QueryListener
     }
 
     ////////////////////////////////////////////////
-    // update
-    ////////////////////////////////////////////////
-
-    public void update() {
-    }
-
-    ////////////////////////////////////////////////
     // repaint
     ////////////////////////////////////////////////
 
-    public interface OnRepaintListener {
-        void onRepaint(LightDevice lightDevice);
+    private OnStatusChangedListener onStatusChangedListener;
+
+    public void setOnStatusChangedListener(OnStatusChangedListener listener) {
+        this.onStatusChangedListener = listener;
     }
 
-    private OnRepaintListener onRepaintListener;
-
-    public void setOnRepaintListener(OnRepaintListener listener) {
-        this.onRepaintListener = listener;
+    public interface OnStatusChangedListener {
+        void onStatusChanged(boolean status);
     }
+
 
 }

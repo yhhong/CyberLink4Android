@@ -47,7 +47,7 @@
 		</stateVariable>
 		<stateVariable sendEvents="no">
 			<name>Result</name>
-			<dataType>boolean</dataType>
+			<dataType>String</dataType>
 		</stateVariable>
 	</serviceStateTable>
 </scpd>

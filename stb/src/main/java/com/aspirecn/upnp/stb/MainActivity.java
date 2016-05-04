@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CheckBox;
 
-import com.aspirecn.upnp.stb.device.LightDevice;
+import com.aspirecn.upnp.stb.upnp.LightService;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -18,12 +18,24 @@ import butterknife.ButterKnife;
  * main activity
  * Created by yinghuihong on 16/4/18.
  */
-public class MainActivity extends AppCompatActivity implements LightDevice.OnRepaintListener {
+public class MainActivity extends AppCompatActivity implements LightService.OnStatusChangedListener {
 
     @Bind(R.id.cb_light)
     CheckBox cbLight;
 
     private STBService stbService;
+    private ServiceConnection conn = new ServiceConnection() {
+        /** 获取服务对象时的操作 */
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            stbService = ((STBService.ServiceBinder) service).getService();
+            stbService.setRepaintListener(MainActivity.this);
+        }
+
+        /** 无法获取到服务对象时的操作 */
+        public void onServiceDisconnected(ComponentName name) {
+            stbService = null;
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,21 +46,6 @@ public class MainActivity extends AppCompatActivity implements LightDevice.OnRep
         bindService(new Intent(this, STBService.class), conn, BIND_AUTO_CREATE);
     }
 
-    private ServiceConnection conn = new ServiceConnection() {
-        /** 获取服务对象时的操作 */
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            stbService = ((STBService.ServiceBinder) service).getService();
-            stbService.setRepaintListener(MainActivity.this);
-//            String s = null;
-//            System.out.println(s.length());
-        }
-
-        /** 无法获取到服务对象时的操作 */
-        public void onServiceDisconnected(ComponentName name) {
-            stbService = null;
-        }
-    };
-
     @Override
     protected void onDestroy() {
         unbindService(conn);
@@ -57,11 +54,11 @@ public class MainActivity extends AppCompatActivity implements LightDevice.OnRep
     }
 
     @Override
-    public void onRepaint(final LightDevice lightDevice) {
+    public void onStatusChanged(final boolean status) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                cbLight.setChecked(lightDevice.isOn());
+                cbLight.setChecked(status);
             }
         });
     }

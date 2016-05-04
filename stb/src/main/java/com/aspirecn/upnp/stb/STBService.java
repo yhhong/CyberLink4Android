@@ -12,8 +12,11 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.aspirecn.upnp.stb.device.LightDevice;
 import com.aspirecn.upnp.stb.tool.AssertUtil;
+import com.aspirecn.upnp.stb.upnp.LightService;
+import com.aspirecn.upnp.stb.upnp.RcService;
+
+import org.cybergarage.upnp.Device;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -27,77 +30,10 @@ public class STBService extends Service {
 
     private final static String TAG = STBService.class.getSimpleName();
 
-    private LightDevice mLightDevice;
+    private Device mDevice;
+    private LightService mLightService;
 
     private IBinder iBinder;
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind()");
-        if (iBinder == null)
-            iBinder = new ServiceBinder();
-        return iBinder;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.e(TAG, "onCreate()");
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(mReceiver, filter);
-
-        // 拷贝assert资源到指定的磁盘目录
-        AssertUtil.copyAssets(this, "description", getCacheDir() + "/description/");
-
-        // 创建设备
-        try {
-            mLightDevice = new LightDevice(getCacheDir() + "/description/description.xml");
-            mLightDevice.setLeaseTime(30 * 60);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setRepaintListener(LightDevice.OnRepaintListener listener) {
-        mLightDevice.setOnRepaintListener(listener);
-    }
-
-    private void startDevice() {
-        Observable.create(new Observable.OnSubscribe<Object>() {
-            @Override
-            public void call(Subscriber<? super Object> subscriber) {
-                mLightDevice.start();
-            }
-        }).subscribeOn(Schedulers.newThread()).subscribe();
-    }
-
-    private void stopDevice() {
-        Observable.create(new Observable.OnSubscribe<Object>() {
-            @Override
-            public void call(Subscriber<? super Object> subscriber) {
-                mLightDevice.stop();
-            }
-        }).subscribeOn(Schedulers.newThread()).subscribe();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e(TAG, "onStartCommand()");
-        startDevice();
-        return super.onStartCommand(intent, flags, startId);
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.e(TAG, "onDestroy()");
-        stopDevice();
-        unregisterReceiver(mReceiver);
-        super.onDestroy();
-    }
-
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
         private ConnectivityManager connectivityManager;
@@ -120,6 +56,78 @@ public class STBService extends Service {
             }
         }
     };
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind()");
+        if (iBinder == null)
+            iBinder = new ServiceBinder();
+        return iBinder;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.e(TAG, "onCreate()");
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(mReceiver, filter);
+
+        // 拷贝assert资源到指定的磁盘目录
+        AssertUtil.copyAssets(this, "description", getCacheDir() + "/description/");
+        // 创建设备
+        initDevice();
+    }
+
+    private void initDevice() {
+        try {
+            mDevice = new Device(getCacheDir() + "/description/description.xml");
+            mDevice.setLeaseTime(30 * 60);
+            mLightService = new LightService(mDevice);
+            new RcService(mDevice);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setRepaintListener(LightService.OnStatusChangedListener listener) {
+        mLightService.setOnStatusChangedListener(listener);
+    }
+
+    private void startDevice() {
+        Observable.create(new Observable.OnSubscribe<Object>() {
+            @Override
+            public void call(Subscriber<? super Object> subscriber) {
+                mDevice.start();
+            }
+        }).subscribeOn(Schedulers.newThread()).subscribe();
+    }
+
+    private void stopDevice() {
+        Observable.create(new Observable.OnSubscribe<Object>() {
+            @Override
+            public void call(Subscriber<? super Object> subscriber) {
+                mDevice.stop();
+            }
+        }).subscribeOn(Schedulers.newThread()).subscribe();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e(TAG, "onStartCommand()");
+        startDevice();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e(TAG, "onDestroy()");
+        stopDevice();
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
 
     class ServiceBinder extends Binder {
         public STBService getService() {

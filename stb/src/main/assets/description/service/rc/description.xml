@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<scpd xmlns="urn:schemas-upnp-org:service-1-0">
+    <specVersion>                                                       <!-- 指定版本号 -->
+        <major>1</major>                                                <!-- 指定主版本号 -->
+        <minor>0</minor>                                                <!-- 指定次版本号 -->
+    </specVersion>
+    <actionList>                                                        <!-- 配置Service下的Action列表 -->
+        <action>
+            <name>RC</name>                                             <!-- 指定Action名 -->
+            <argumentList>
+                <argument>
+                    <name>KeyCode</name>                                    <!-- 指定参数名 -->
+                    <relatedStateVariable>KeyCode</relatedStateVariable>    <!-- 指定参数采用的变量类型 -->
+                    <direction>in</direction>
+                </argument>
+                <argument>
+                    <name>Result</name>
+                    <relatedStateVariable>Result</relatedStateVariable>
+                    <direction>out</direction>
+                </argument>
+            </argumentList>
+        </action>
+    </actionList>
+    <serviceStateTable>                                                 <!-- 配置Service下的状态变量列表 -->
+        <stateVariable sendEvents="yes">                                <!-- 做限制,用于判断是否可以发送事件;使用场景:修改完状态后,发送响应 -->
+            <name>KeyCode</name>                                        <!-- 变量名称 -->
+            <dataType>String</dataType>
+        </stateVariable>
+        <stateVariable sendEvents="no">
+            <name>Result</name>
+            <dataType>String</dataType>
+        </stateVariable>
+    </serviceStateTable>
+</scpd>
